@@ -47,6 +47,12 @@ def parse_args() -> argparse.Namespace:
     p.add_argument("--token", default="123456")
     p.add_argument("--interval", type=float, default=2.0)
     p.add_argument(
+        "--bcast",
+        default="255.255.255.255",
+        help="广播地址；默认 255.255.255.255（受限路由器可能拦截，"
+        "可改 192.168.x.255 等子网定向广播绕过）",
+    )
+    p.add_argument(
         "--packet-log",
         action=argparse.BooleanOptionalAction,
         default=True,
@@ -75,7 +81,7 @@ def main() -> None:
     _log("INIT", f"socket ready, broadcast=ON, SO_REUSEADDR=ON")
     _log(
         "INIT",
-        f"target=255.255.255.255:{args.port} interval={args.interval}s "
+        f"target={args.bcast}:{args.port} interval={args.interval}s "
         f"name={args.name!r} project={args.project!r}",
     )
     _log("INIT", f"payload size={len(data)}B json={payload!r}")
@@ -85,13 +91,13 @@ def main() -> None:
     try:
         while True:
             seq += 1
-            sent_bytes = sock.sendto(data, ("255.255.255.255", args.port))
+            sent_bytes = sock.sendto(data, (args.bcast, args.port))
             if args.packet_log:
                 elapsed = time.time() - started
                 _log(
                     "SEND",
                     f"#{seq} t={elapsed:6.2f}s sent={sent_bytes}B "
-                    f"to 255.255.255.255:{args.port}",
+                    f"to {args.bcast}:{args.port}",
                 )
             time.sleep(args.interval)
     except KeyboardInterrupt:

@@ -6,6 +6,8 @@
 // PC 端 mock：
 //   python3 scripts/pc_mock_broadcaster.py        # v0.12
 
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'dart:developer' as dev;
 
@@ -23,20 +25,32 @@ DiscoveryService _buildDiscovery() {
 }
 
 void main() {
-  WidgetsFlutterBinding.ensureInitialized();
+  // [DEBUG] 最早可观察点：确认 main() 真的被调到。
+  // 如果 logcat 没看到这一行 → AndroidManifest / 包名 / activity 入口配置错
+  print('!! DART MAIN START !!');
+  dev.log('!! DART MAIN START (via dev.log) !!', name: 'starttooler');
 
-  final discovery = _buildDiscovery();
+  // 顶层 try/catch 把启动期所有异常打到 logcat，避免被 framework 静默吞掉。
+  // 用 print() 而非 dev.log —— Android logcat 抓 print 稳定（tag='flutter'），
+  // dev.log 的 Android 行为不稳定（部分版本被 SELinux/ring buffer 过滤）。
+  runZonedGuarded(() async {
+    WidgetsFlutterBinding.ensureInitialized();
+    print('[StartTooler] binding initialized');
 
-  if (true) {
-    dev.log('[StartTooler] discovery = LegacyUDP(:9876)', name: 'starttooler');
-  }
+    final discovery = _buildDiscovery();
+    print('[StartTooler] discovery = LegacyUDP(:9876)');
 
-  runApp(
-    StartToolerApp(
-      discovery: discovery,
-      connection: ConnectionMock(),
-      projects: ProjectMock(),
-      uploader: UploadMock(),
-    ),
-  );
+    runApp(
+      StartToolerApp(
+        discovery: discovery,
+        connection: ConnectionMock(),
+        projects: ProjectMock(),
+        uploader: UploadMock(),
+      ),
+    );
+    print('[StartTooler] runApp() returned');
+  }, (e, st) {
+    print('!! DART UNCAUGHT EXCEPTION: $e');
+    print('StackTrace: $st');
+  });
 }
