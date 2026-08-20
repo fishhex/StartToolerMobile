@@ -75,6 +75,19 @@ class UdpDiscoveryServiceImpl implements UdpDiscoveryService {
     UdpLog.udp('scan() called, window=$window port=$port '
         'bindAddress=${bindAddress?.address ?? "<auto>"}');
 
+    // 先清理上一次 scan 的残留 sub 与 socket，避免 listener 互相覆盖
+    // （checklist #8 「第一次收到后续收不到」对应此 bug）。
+    await _sub?.cancel();
+    _sub = null;
+    if (_socket != null) {
+      try {
+        _socket!.close();
+      } on Object catch (e) {
+        UdpLog.udp('previous socket close error (ignored): $e');
+      }
+      _socket = null;
+    }
+
     try {
       await _ensureSocket();
     } on AppError catch (e) {
@@ -186,6 +199,8 @@ class UdpDiscoveryServiceImpl implements UdpDiscoveryService {
         port,
         reuseAddress: true,
       );
+      // 注：Dart 的 RawDatagramSocket 没有 setBroadcast API；
+      //     bind() 默认就会接收 SO_BROADCAST 包（Linux/ANdroid 内核自动开启）。
       final localAddr = _socket!.address.address;
       final localPort = _socket!.port;
       UdpLog.udp('RawDatagramSocket.bind success on $localAddr:$localPort');

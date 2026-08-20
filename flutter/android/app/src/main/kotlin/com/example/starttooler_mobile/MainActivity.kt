@@ -2,6 +2,7 @@ package com.example.starttooler_mobile
 
 import android.content.Context
 import android.net.wifi.WifiManager
+import android.util.Log
 import io.flutter.embedding.android.FlutterActivity
 import io.flutter.embedding.engine.FlutterEngine
 import io.flutter.plugin.common.MethodChannel
@@ -18,10 +19,17 @@ import io.flutter.plugin.common.MethodChannel
  */
 class MainActivity : FlutterActivity() {
     private val channelName = "starttooler/multicast_lock"
+    private val logTag = "StartToolerNative"
 
     private var multicastLock: WifiManager.MulticastLock? = null
 
+    override fun onCreate(savedInstanceState: android.os.Bundle?) {
+        super.onCreate(savedInstanceState)
+        Log.i(logTag, "MainActivity.onCreate()")
+    }
+
     override fun configureFlutterEngine(flutterEngine: FlutterEngine) {
+        Log.i(logTag, "configureFlutterEngine() setting up MethodChannel")
         super.configureFlutterEngine(flutterEngine)
 
         MethodChannel(
@@ -33,8 +41,10 @@ class MainActivity : FlutterActivity() {
                     try {
                         val lock = ensureLock()
                         if (!lock.isHeld) lock.acquire()
+                        Log.i(logTag, "acquire() isHeld=${lock.isHeld}")
                         result.success(lock.isHeld)
                     } catch (e: Exception) {
+                        Log.e(logTag, "acquire() failed: ${e.message}", e)
                         result.error("MULTICAST_LOCK_ACQUIRE_FAILED", e.message, null)
                     }
                 }
@@ -43,8 +53,10 @@ class MainActivity : FlutterActivity() {
                         multicastLock?.let {
                             if (it.isHeld) it.release()
                         }
+                        Log.i(logTag, "release() ok")
                         result.success(null)
                     } catch (e: Exception) {
+                        Log.e(logTag, "release() failed: ${e.message}", e)
                         result.error("MULTICAST_LOCK_RELEASE_FAILED", e.message, null)
                     }
                 }

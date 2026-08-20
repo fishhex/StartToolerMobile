@@ -2,15 +2,18 @@
 <!--
   D04 §6.3 局域网私有 IP 段开放 cleartext（仅 POC 阶段）。
   上线版本应改回 https。
+
+  domain-config 用 CIDR 后缀（API 24+）：
+    192.168.0.0/16  → 整段 192.168.x.x
+    172.16.0.0/12   → 整段 172.16-31.x.x
+    10.0.0.0/8      → 整段 10.x.x.x
 -->
 <network-security-config>
     <base-config cleartextTrafficPermitted="false"/>
     <domain-config cleartextTrafficPermitted="true">
-        <domain includeSubdomains="true">192.168.0.0</domain>
-        <domain includeSubdomains="true">192.168.1.0</domain>
-        <domain includeSubdomains="true">192.168.2.0</domain>
-        <domain includeSubdomains="true">10.0.0.0</domain>
-        <domain includeSubdomains="true">172.16.0.0</domain>
+        <domain includeSubdomains="true">192.168.0.0/16</domain>
+        <domain includeSubdomains="true">172.16.0.0/12</domain>
+        <domain includeSubdomains="true">10.0.0.0/8</domain>
         <domain includeSubdomains="true">localhost</domain>
     </domain-config>
 </network-security-config>

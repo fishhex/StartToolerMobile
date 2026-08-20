@@ -6,8 +6,8 @@
 // PC 端 mock：
 //   python3 scripts/pc_mock_broadcaster.py        # v0.12
 
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'dart:developer' as dev;
 
 import 'app/app.dart';
 import 'features/connection/connection_service.dart';
@@ -27,8 +27,8 @@ void main() {
 
   final discovery = _buildDiscovery();
 
-  if (kDebugMode) {
-    debugPrint('[StartTooler] discovery = LegacyUDP(:9876)');
+  if (true) {
+    dev.log('[StartTooler] discovery = LegacyUDP(:9876)', name: 'starttooler');
   }
 
   runApp(

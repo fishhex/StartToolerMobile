@@ -6,22 +6,24 @@
 // 设计：
 //   - 统一前缀 [UDP] / [MLOCK] / [ANNOUNCE]，便于 adb logcat 过滤。
 //   - 包含 ISO 时间戳 + 自增计数（同一毫秒内多次事件也能区分）。
-//   - 总是输出：debug 模式打开（kDebugMode）才打印，避免 release 包噪声。
+//   - 用 developer.log 而非 debugPrint —— 后者要求 kDebugMode=true；
+//     developer.log 走 Android logcat 的 'flutter' tag，不受 kDebugMode 限制，
+//     release 包也能看到（生产环境保留）。
 //   - 不破坏现有 API：仅提供静态方法。
 
-import 'package:flutter/foundation.dart';
+import 'dart:developer' as dev;
 
 class UdpLog {
   UdpLog._();
 
   static int _seq = 0;
 
-  /// 输出形如 `[UDP][T+123ms #4] hello` 的日志。
+  /// 输出形如 `[UDP][#0004 t=12345] hello` 的日志。
   static void emit(String tag, String message) {
-    if (!kDebugMode) return;
     final n = ++_seq;
     final ms = DateTime.now().millisecondsSinceEpoch % 100000;
-    debugPrint('[$tag][#${n.toString().padLeft(4, '0')} t=$ms] $message');
+    dev.log('[$tag][#${n.toString().padLeft(4, '0')} t=$ms] $message',
+        name: 'starttooler');
   }
 
   // 常用 tag 快捷方法
