@@ -128,11 +128,9 @@ class UdpDiscoveryServiceImpl implements UdpDiscoveryService {
 
     UdpLog.raw('recv ${bytes.length}B from $senderIp:$senderPort hex=$hex');
 
-    // 跳过非目标端口（多网卡场景下避免本机回环噪声）。
-    if (datagram.port != port) {
-      UdpLog.raw('filtered (port mismatch: $senderPort != $port)');
-      return;
-    }
+    // 注意：datagram.port 是「发送方源端口」（如 51657，PC 端临时端口），
+    // 不应与本机监听端口 (9876) 比较 —— 否则所有广播都会被误过滤。
+    // 接收方正确性由 socket 绑定 port=9876 时的 UDP 内核栈保证。
 
     final text = _tryDecodeUtf8(bytes);
     if (text == null) {
