@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 
 import '../core/app_state.dart';
 import '../features/connection/connection_service.dart';
+import '../features/connection/manual_input_view.dart';
 import '../features/connection/token_input_view.dart';
 import '../features/discovery/discovery_service.dart';
 import '../features/discovery/discovery_view.dart';
@@ -48,6 +49,17 @@ GoRouter buildRouter({
                 connection: connection,
                 ip: extra?['ip'] ?? '192.168.1.10',
                 pcName: extra?['name'] ?? 'PC',
+              );
+            },
+          ),
+          // T-M1-3 · 手动输入兜底页（IP + Port + Token 三字段）。
+          GoRoute(
+            path: 'manual',
+            builder: (ctx, state) {
+              final extra = state.extra as Map<String, String>?;
+              return ManualInputView(
+                connection: connection,
+                initialIp: extra?['ip'],
               );
             },
           ),

@@ -23,6 +23,7 @@ import '../../ui/tokens/colors.dart';
 import '../../ui/tokens/spacing.dart';
 import '../../ui/tokens/typography.dart';
 import 'discovery_service.dart';
+import 'multicast_lock_channel.dart';
 import 'udp_log.dart';
 
 class DiscoveryView extends StatefulWidget {
@@ -46,6 +47,8 @@ class _DiscoveryViewState extends State<DiscoveryView> {
     super.initState();
     AppState.stage = AppStage.disconnected;
     UdpLog.view('initState → startScan');
+    // T-M1-6：进入发现页即持有 Android MulticastLock，保证 Doze/低功耗模式下 UDP 仍能接收。
+    MulticastLockChannel.instance.acquire();
     _startScan();
   }
 
@@ -99,6 +102,8 @@ class _DiscoveryViewState extends State<DiscoveryView> {
     UdpLog.view('dispose → cancel timers');
     _ticker?.cancel();
     _countdown?.cancel();
+    // T-M1-6：离开发现页必须释放 MulticastLock，避免持续耗电与被系统判定后台行为。
+    MulticastLockChannel.instance.release();
     super.dispose();
   }
 
@@ -111,22 +116,10 @@ class _DiscoveryViewState extends State<DiscoveryView> {
   }
 
   Future<void> _showManualInput() async {
-    UdpLog.view('open manual IP sheet');
-    final ip = await showModalBottomSheet<String>(
-      context: context,
-      isScrollControlled: true,
-      backgroundColor: AppColors.space800,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-      ),
-      builder: (ctx) => _ManualIPSheet(),
-    );
-    if (ip != null && mounted) {
-      UdpLog.view('manual IP entered: $ip → /connect/token');
-      context.push('/connect/token', extra: {'ip': ip, 'name': '手动输入'});
-    } else {
-      UdpLog.view('manual IP sheet dismissed without input');
-    }
+    // T-M1-3：跳转到独立的 ManualInputView（IP + Port + Token 三字段）。
+    // 旧的 _ManualIPSheet 单 IP 输入已删除。
+    UdpLog.view('manual input → /connect/manual');
+    await context.push('/connect/manual');
   }
 
   @override
@@ -208,75 +201,6 @@ class _DiscoveryViewState extends State<DiscoveryView> {
             ),
           ),
         ),
-      ),
-    );
-  }
-}
-
-class _ManualIPSheet extends StatefulWidget {
-  @override
-  State<_ManualIPSheet> createState() => _ManualIPSheetState();
-}
-
-class _ManualIPSheetState extends State<_ManualIPSheet> {
-  final _ctrl = TextEditingController(text: '192.168.1.');
-
-  @override
-  void dispose() {
-    _ctrl.dispose();
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final padding = MediaQuery.of(context).viewInsets.bottom;
-    return Padding(
-      padding: EdgeInsets.fromLTRB(
-          AppSpace.md, AppSpace.md, AppSpace.md, AppSpace.md + padding),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Center(
-            child: Container(
-              width: 36,
-              height: 4,
-              decoration: BoxDecoration(
-                color: AppColors.space600,
-                borderRadius: BorderRadius.circular(2),
-              ),
-            ),
-          ),
-          const SizedBox(height: AppSpace.md),
-          const Text('手动输入 PC 的 IP', style: AppTextStyle.titleLg),
-          const SizedBox(height: AppSpace.md),
-          TextField(
-            controller: _ctrl,
-            autofocus: true,
-            keyboardType: TextInputType.number,
-            style: AppTextStyle.titleMd.copyWith(color: AppColors.star100),
-            decoration: InputDecoration(
-              hintText: '192.168.1.10',
-              hintStyle:
-                  AppTextStyle.titleMd.copyWith(color: AppColors.star300),
-              filled: true,
-              fillColor: AppColors.space700,
-              border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(8),
-                borderSide: BorderSide.none,
-              ),
-            ),
-          ),
-          const SizedBox(height: AppSpace.md),
-          PrimaryButton(
-            label: '确定',
-            onPressed: () {
-              final ip = _ctrl.text.trim();
-              if (ip.isEmpty) return;
-              Navigator.of(context).pop(ip);
-            },
-          ),
-        ],
       ),
     );
   }
