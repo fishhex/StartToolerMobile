@@ -9,20 +9,30 @@
 //   - 缓存 key：与 udp_discovery_service 一致使用 announce.dedupeKey
 //     （name + port + ip 三元组，D01 §3.5）。
 //
+// D03 接入：
+//   - 收到每个 announce → 无条件把 token 写入 TokenStore（D03 §3.1 权威源）
+//   - 同 name+port 视为同一 PC，IP 浮动时按 D03 §3.5 覆盖
+//
 // 联调日志：[ADAPTER] 前缀。
 
 import 'dart:async';
 
 import '../../core/mock/seed_data.dart';
+import '../../core/token.dart';
 import 'discovery_service.dart';
 import 'udp_announce.dart';
 import 'udp_discovery_service.dart';
 import 'udp_log.dart';
 
 class UdpDiscoveryAdapter implements DiscoveryService {
-  UdpDiscoveryAdapter(this._udp);
+  UdpDiscoveryAdapter(this._udp, {TokenStore? tokenStore})
+      : _tokenStore = tokenStore;
 
   final UdpDiscoveryService _udp;
+
+  /// 可选：注入 TokenStore 把广播 token 推入（D03 §3.1 权威源）。
+  /// 未注入时仅走发现路径，不写 token。
+  final TokenStore? _tokenStore;
 
   // 临时缓存：announce.dedupeKey -> 已发现的 PC（供后续合并 projectCount 用）。
   final Map<String, PC> _cache = {};
@@ -42,6 +52,19 @@ class UdpDiscoveryAdapter implements DiscoveryService {
           return;
         }
 
+        // D03 §3.1 / §3.5：UDP 广播是 token 的唯一权威源；
+        // 每次收到广播都无条件把 token 写入 TokenStore（覆盖式更新）。
+        final t = Token.tryParse(announce.token);
+        if (t != null && _tokenStore != null) {
+          _tokenStore.register(ConnectedPC(
+            name: announce.name,
+            ip: announce.ip,
+            port: announce.port,
+            token: t,
+            currentProject: announce.currentProject,
+          ));
+        }
+
         final pc = PC(
           name: announce.name,
           ip: announce.ip,
@@ -56,7 +79,8 @@ class UdpDiscoveryAdapter implements DiscoveryService {
         );
         _cache[announce.dedupeKey] = pc;
         UdpLog.adapter('emit PC name="${pc.name}" '
-            'addr=${pc.displayAddress} currentProject=${pc.currentProject}');
+            'addr=${pc.displayAddress} currentProject=${pc.currentProject} '
+            'token=${t?.masked ?? "<invalid>"}');
         onDiscovered(pc);
       },
     );

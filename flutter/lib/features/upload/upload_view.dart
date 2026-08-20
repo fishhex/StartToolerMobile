@@ -94,9 +94,7 @@ class _UploadViewState extends State<UploadView> {
 
   @override
   Widget build(BuildContext context) {
-    final pc = widget.connection is ConnectionMock
-        ? (widget.connection as ConnectionMock).connected
-        : null;
+    final pc = widget.connection.connected;
     final pcName = pc?.name ?? 'PC';
     final current = _currentProject;
 

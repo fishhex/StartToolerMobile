@@ -44,11 +44,19 @@ GoRouter buildRouter({
           GoRoute(
             path: 'token',
             builder: (ctx, state) {
-              final extra = state.extra as Map<String, String>?;
+              final extra = state.extra as Map<String, Object?>?;
+              final portRaw = extra?['port'];
+              int? port;
+              if (portRaw is int) {
+                port = portRaw;
+              } else if (portRaw is String) {
+                port = int.tryParse(portRaw);
+              }
               return TokenInputView(
                 connection: connection,
-                ip: extra?['ip'] ?? '192.168.1.10',
-                pcName: extra?['name'] ?? 'PC',
+                ip: extra?['ip'] as String? ?? '192.168.1.10',
+                pcName: extra?['name'] as String? ?? 'PC',
+                port: port,
               );
             },
           ),

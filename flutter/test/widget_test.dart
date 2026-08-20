@@ -7,6 +7,7 @@ import 'package:flutter_test/flutter_test.dart';
 
 import 'package:starttooler_mobile/app/app.dart';
 import 'package:starttooler_mobile/core/mock/seed_data.dart';
+import 'package:starttooler_mobile/core/token_store_in_memory.dart';
 import 'package:starttooler_mobile/features/connection/connection_service.dart';
 import 'package:starttooler_mobile/features/discovery/discovery_service.dart';
 import 'package:starttooler_mobile/features/project/project_service.dart';
@@ -18,7 +19,7 @@ void main() {
       await tester.pumpWidget(
         StartToolerApp(
           discovery: DiscoveryMock(),
-          connection: ConnectionMock(),
+          connection: HttpConnectionService(tokenStore: InMemoryTokenStore()),
           projects: ProjectMock(),
           uploader: UploadMock(),
         ),

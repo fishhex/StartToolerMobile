@@ -1,4 +1,7 @@
 // lib/features/connection/token_input_view.dart
+//
+// D03 接入：6 位数字 token 输入 → 调 ConnectionService.connect()。
+// 错误码 → 抖动；验证中 → 转圈。
 
 import 'dart:async';
 
@@ -7,6 +10,7 @@ import 'package:go_router/go_router.dart';
 
 import '../../core/app_error.dart';
 import '../../core/app_state.dart';
+import '../../core/mock/seed_data.dart';
 import '../../ui/components/buttons.dart';
 import '../../ui/components/token_input.dart';
 import '../../ui/tokens/colors.dart';
@@ -20,11 +24,15 @@ class TokenInputView extends StatefulWidget {
     required this.connection,
     required this.ip,
     required this.pcName,
+    this.port,
   });
 
   final ConnectionService connection;
   final String ip;
   final String pcName;
+
+  /// 端口；可选。手动输入页会传；UDP 发现页可省略（默认 8765）。
+  final int? port;
 
   @override
   State<TokenInputView> createState() => _TokenInputViewState();
@@ -67,7 +75,12 @@ class _TokenInputViewState extends State<TokenInputView>
   Future<void> _verify() async {
     setState(() => _verifying = true);
     try {
-      await widget.connection.connect(ip: widget.ip, token: _token);
+      await widget.connection.connect(
+        ip: widget.ip,
+        port: widget.port ?? defaultHttpPort,
+        token: _token,
+        name: widget.pcName,
+      );
       if (!mounted) return;
       AppState.stage = AppStage.connected;
       context.go('/home');
