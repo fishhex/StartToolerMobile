@@ -3,8 +3,7 @@
 // M1 入口：默认走 PC v0.12 协议的真实 UDP Discovery（端口 9876）。
 // v1.0 实验分支（端口 9001）按 spec §十二「v1 封存」已下线，本里程碑不提供。
 //
-// PC 端 mock：
-//   python3 scripts/pc_mock_broadcaster.py        # v0.12
+// 联调依赖：真实 PC 端（StartTooler/Services/UploadServerService.cs）必须运行。
 
 import 'dart:async';
 
