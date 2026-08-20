@@ -14,9 +14,6 @@ python3 scripts/pc_mock_broadcaster.py
 
 # 2. Android 真机运行（默认走 PC v0.12 协议）
 flutter run
-
-# 可选：v1.0 实验分支（端口 9001）
-flutter run --dart-define=PROTO=v1
 ```
 
 ### 完整流程自测

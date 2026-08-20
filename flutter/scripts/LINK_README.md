@@ -41,8 +41,6 @@ python3 pc_mock_broadcaster.py
 ```bash
 cd flutter
 flutter run                       # 默认走 PC v0.12 真实 UDP
-# v1.0 实验分支：
-flutter run --dart-define=PROTO=v1
 ```
 
 ### 3. 观察日志
@@ -76,7 +74,7 @@ adb logcat | grep -E "UDP|MLOCK|ANNOUNCE|ADAPTER|VIEW|StartTooler"
 
 | 前缀 | 含义 | 典型内容 |
 |---|---|---|
-| `[StartTooler]` | 启动模式 | LegacyUDP(:9876) vs V1UDP(:9001) |
+| `[StartTooler]` | 启动模式 | LegacyUDP(:9876) |
 | `[MLOCK]` | MulticastLock 桥接 | acquire / release 调用与结果 |
 | `[UDP]` | socket 生命周期 | bind / listen / 关闭 / 设备新增 |
 | `[UDP-RAW]` | 原始字节流 | 每个收到的数据包（hex + UTF-8） |
@@ -126,7 +124,6 @@ adb logcat | grep -E "UDP|MLOCK|ANNOUNCE|ADAPTER|VIEW|StartTooler"
 ### 5. logcat 完全没 `[UDP]` 日志
 
 - 确认走的是真实 UDP：`[StartTooler] discovery = LegacyUDP(:9876)`
-- 如果是 `V1UDP(:9001)`（实验分支），加 `--dart-define=PROTO=v1` 或反之去掉
 
 ---
 
