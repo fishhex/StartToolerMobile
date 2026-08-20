@@ -12,7 +12,7 @@ pc_mock_broadcaster.py — 最小 PC 端 UDP 广播模拟器
 参数：
   --port        广播端口，默认 9876
   --name        机器名（UDP.name 字段），默认 Hex-MacBook
-  --project     current_project，默认 deepsky-2025（设为空字符串表示 PC 无打开项目）
+  --project     currentProject，默认 deepsky-2025（设为空字符串表示 PC 无打开项目）
   --version     协议版本，默认 0.12
   --token       token 字段，默认 123456
   --interval    广播周期（秒），默认 2.0
@@ -68,7 +68,7 @@ def main() -> None:
         "name": args.name,
         "port": 8765,
         "token": args.token,
-        "current_project": args.project,
+        "currentProject": args.project,
     }
     data = json.dumps(payload).encode("utf-8")
 

@@ -30,7 +30,7 @@ python3 pc_mock_broadcaster.py
 输出：
 ```
 [mock-pc] broadcasting on 255.255.255.255:9876
-[mock-pc] payload: {'service': 'starttooler', 'version': '0.12', 'name': 'Hex-MacBook', 'port': 8765, 'token': '123456', 'current_project': 'deepsky-2025'}
+[mock-pc] payload: {'service': 'starttooler', 'version': '0.12', 'name': 'Hex-MacBook', 'port': 8765, 'token': '123456', 'currentProject': 'deepsky-2025'}
 [mock-pc] interval: 2.0s   (Ctrl-C to stop)
 ```
 
@@ -40,9 +40,9 @@ python3 pc_mock_broadcaster.py
 
 ```bash
 cd flutter
-flutter run                       # 默认真实 UDP
-# 或保留 Mock 演示：
-flutter run --dart-define=USE_MOCK=true
+flutter run                       # 默认走 PC v0.12 真实 UDP
+# v1.0 实验分支：
+flutter run --dart-define=PROTO=v1
 ```
 
 ### 3. 观察日志
@@ -76,7 +76,7 @@ adb logcat | grep -E "UDP|MLOCK|ANNOUNCE|ADAPTER|VIEW|StartTooler"
 
 | 前缀 | 含义 | 典型内容 |
 |---|---|---|
-| `[StartTooler]` | 启动模式 | RealUDP vs Mock |
+| `[StartTooler]` | 启动模式 | LegacyUDP(:9876) vs V1UDP(:9001) |
 | `[MLOCK]` | MulticastLock 桥接 | acquire / release 调用与结果 |
 | `[UDP]` | socket 生命周期 | bind / listen / 关闭 / 设备新增 |
 | `[UDP-RAW]` | 原始字节流 | 每个收到的数据包（hex + UTF-8） |
@@ -125,8 +125,8 @@ adb logcat | grep -E "UDP|MLOCK|ANNOUNCE|ADAPTER|VIEW|StartTooler"
 
 ### 5. logcat 完全没 `[UDP]` 日志
 
-- 确认走的是真实 UDP：`[StartTooler] discovery = RealUDP(:9876)`
-- 如果是 `Mock`，加 `--dart-define=USE_MOCK=true` 或反过来去掉
+- 确认走的是真实 UDP：`[StartTooler] discovery = LegacyUDP(:9876)`
+- 如果是 `V1UDP(:9001)`（实验分支），加 `--dart-define=PROTO=v1` 或反之去掉
 
 ---
 
@@ -145,4 +145,4 @@ adb logcat | grep -E "UDP|MLOCK|ANNOUNCE|ADAPTER|VIEW|StartTooler"
 | **真实 multipart 上传** | ❌ Mock |
 | **持久化（重启后自动验证）** | ❌ 未实现 |
 
-本轮仅验证"UDP 收到广播"。HTTP 闭环在 P0-2 之后联调。
+本轮仅验证"UDP 收到广播"。HTTP 闭环在 M2 之后联调。

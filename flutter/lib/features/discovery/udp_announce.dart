@@ -8,7 +8,7 @@
 //     "name": "Hex-MacBook",
 //     "port": 8765,
 //     "token": "123456",
-//     "current_project": "deepsky-2025"   // 可空字符串
+//     "currentProject": "deepsky-2025"   // 可空字符串
 //   }
 
 import 'dart:convert';
@@ -113,7 +113,7 @@ class UdpAnnounce {
         ? versionRaw.trim()
         : '0';
 
-    final curRaw = map['current_project'];
+    final curRaw = map['currentProject'];
     String? cur;
     if (curRaw is String) {
       final t = curRaw.trim();
