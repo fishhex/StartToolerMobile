@@ -6,6 +6,8 @@
 //   - 保持 DiscoveryService.scan 签名不变，UI 层无感升级。
 //   - UdpAnnounce 里没有 project_count / rssi，先用占位值（-1 / 0），
 //     等真实 /api/v1/projects 接通后再补（D05 §11.6 待定）。
+//   - 缓存 key：与 udp_discovery_service 一致使用 announce.dedupeKey
+//     （name + port + ip 三元组，D01 §3.5）。
 //
 // 联调日志：[ADAPTER] 前缀。
 
@@ -22,7 +24,7 @@ class UdpDiscoveryAdapter implements DiscoveryService {
 
   final UdpDiscoveryService _udp;
 
-  // 临时缓存：announce -> 已发现的 PC（供后续合并 projectCount 用）。
+  // 临时缓存：announce.dedupeKey -> 已发现的 PC（供后续合并 projectCount 用）。
   final Map<String, PC> _cache = {};
 
   @override
@@ -32,7 +34,7 @@ class UdpDiscoveryAdapter implements DiscoveryService {
     UdpLog.adapter('scan() called');
     final result = await _udp.scan(
       window: discoveryWindow,
-      onAnnounce: (announce) {
+      onAnnounce: (UdpAnnounce announce) {
         // 不识别版本 → 跳过，但通过 UI 提醒用户（D04 §7 / D05 §9.3）
         if (!announce.isCompatibleVersion) {
           UdpLog.adapter('skip announce from ${announce.ip} '
@@ -52,7 +54,7 @@ class UdpDiscoveryAdapter implements DiscoveryService {
           // 多网卡/同子网情形下 RSSI 排序意义不大，这里按发现顺序即可。
           rssi: -100,
         );
-        _cache[pc.ip] = pc;
+        _cache[announce.dedupeKey] = pc;
         UdpLog.adapter('emit PC name="${pc.name}" '
             'addr=${pc.displayAddress} currentProject=${pc.currentProject}');
         onDiscovered(pc);

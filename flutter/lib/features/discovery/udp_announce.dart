@@ -44,6 +44,11 @@ class UdpAnnounce {
   /// 当前激活项目；null 表示 PC 未打开任何项目。
   final String? currentProject;
 
+  /// 去重 key：D01 §3.5 要求「同 LAN 多台 PC 可能重名；用 `name + port + ip`
+  /// 三元组去重，IP 视为浮动（同 name + port 不同 IP 视为同一设备）」。
+  /// 使用 `|` 分隔避免 name 自身含 `|` 时撞键（罕见但理论上可能）。
+  String get dedupeKey => '$name|$port|$ip';
+
   /// 仅识别主版本号相同或更新的协议。
   /// D05 §9.3：App 端看到 version 不识别 → 提示升级 PC 端。
   static const String minSupportedMajor = '0';

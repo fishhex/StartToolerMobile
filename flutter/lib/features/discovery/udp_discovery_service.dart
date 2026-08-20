@@ -163,13 +163,14 @@ class UdpDiscoveryServiceImpl implements UdpDiscoveryService {
       return;
     }
 
-    // 去重：同 IP 只保留最后一次 announce。
-    final isNew = !seen.containsKey(announce.ip);
-    seen[announce.ip] = announce;
+    // 去重：D01 §3.5 要求 `name + port + ip` 三元组（IP 视为浮动）。
+    final key = announce.dedupeKey;
+    final isNew = !seen.containsKey(key);
+    seen[key] = announce;
     if (isNew) {
-      UdpLog.udp('new device ${announce.ip} added to list');
+      UdpLog.udp('new device name="${announce.name}" addr=${announce.ip}:${announce.port} added (key=$key)');
     } else {
-      UdpLog.udp('update existing device ${announce.ip}');
+      UdpLog.udp('update existing device name="${announce.name}" addr=${announce.ip}:${announce.port} (key=$key)');
     }
     onAnnounce(announce);
   }
