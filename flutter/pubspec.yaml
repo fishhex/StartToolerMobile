@@ -1,5 +1,5 @@
 name: starttooler_mobile
-description: StartTooler 移动端 App 起点（最小 hello! 基线）。
+description: StartTooler Flutter Hello demo.
 publish_to: "none"
 version: 0.1.0+1
 
@@ -10,9 +10,6 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
-  go_router: ^14.6.2
-  provider: ^6.1.2
-  http: ^1.2.2
 
 dev_dependencies:
   flutter_test:
