@@ -9,6 +9,7 @@
 - **UI**：不考虑设计。沿用第一期朴素 Material。
 - **真实实现**：直连 PC 端真实 HTTP 接口，无 mock。
 - **触发场景**：PC 端换网络 / 改端口 / 重启后 IP 变化（KB §六 IP 变 / Port 变）。
+- **扫码入口**：复用第一期已实现的扫码页（`/connect`），无新入口。
 
 ## 任务拆分
 
@@ -31,21 +32,21 @@
 
 > T5 专注于「IP/Port 变」场景；密钥重置沿用第一期 T4 的 401 处理。
 
-### T5.1 启动健康检查（已是第一期 T2.4）
+### T5.1 启动健康检查（沿用第一期 T2.4）
 
 - [ ] Splash 阶段调 health 验证当前 space
-- [ ] 失败（`NetworkError.unreachable` / `TimeoutException` / 5xx）→ 跳 `/connect`，banner 提示「连不上 PC，工作空间保留」
+- [ ] 失败（`NetworkError.unreachable` / `TimeoutException` / 5xx）→ 跳 `/connect` 扫码页，banner 提示「连不上 PC，工作空间保留」
 - [ ] 401 → banner 提示「PC 端密钥已重置，请重新扫码」（保留持久化项，等用户主动重扫）
 
 ### T5.2 上传前健康检查（新增）
 
 - [ ] `upload_api.upload` 之前先调一次 `health_api.check`
 - [ ] 健康成功 → 继续上传
-- [ ] 健康失败 → 弹窗「PC 网络信息已变更，请重新扫码」+ 跳 `/connect`
+- [ ] 健康失败 → 弹窗「PC 网络信息已变更，请重新扫码」+ 跳 `/connect` 扫码页
 
 ### T5.3 重扫码后写持久化覆盖
 
-- [ ] `/connect` 粘贴新 QR 内容 → QR 解析 → health 验证
+- [ ] `/connect` 扫码 → QR 解析 → health 验证
 - [ ] 验证成功 → 根据 PC 端 `name` 查找持久化空间：
   - 找到 → 更新 ip/port/secret（覆盖原条目）
   - 没找到 → 视为新空间，追加
@@ -60,8 +61,8 @@
 
 ### T5 验收
 
-- [ ] 模拟 PC 端换 IP（修改路由器/PC 网络）→ App 端启动 → 自动跳 `/connect` + banner 提示
-- [ ] 在 `/connect` 粘贴新 QR → 解析 → health → 写持久化（覆盖原 IP）→ 跳主页
+- [ ] 模拟 PC 端换 IP（修改路由器/PC 网络）→ App 端启动 → 自动跳 `/connect` 扫码页 + banner 提示
+- [ ] 在扫码页扫新 QR → 解析 → health → 写持久化（覆盖原 IP）→ 跳主页
 - [ ] 健康重连后，上传功能正常工作
 - [ ] 同名 PC 重启 IP 不变 → 健康成功，无感知
 - [ ] 多 PC 切换 → 持久化空间列表正确管理
@@ -74,6 +75,7 @@
 - ❌ mDNS / Bonjour 自动发现
 - ❌ App 端主动轮询 / 探测
 - ❌ iOS / macOS
+- ❌ 新增扫码入口（复用第一期的 `/connect` 扫码页）
 
 ## 交付物
 
