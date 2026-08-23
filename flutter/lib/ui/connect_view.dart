@@ -117,7 +117,7 @@ class _ConnectViewState extends State<ConnectView> {
           lastSeenAt: DateTime.now(),
         );
         await context.read<SpacesController>().upsertAndActivate(s);
-        debugPrint('[连接] Space 已保存 name=${s.name}');
+        debugPrint('[连接] Space 已保存 name=${s.name} mounted={$mounted}');
         if (!mounted) return;
         context.go('/home');
         debugPrint('[连接] 已跳转到 /home');

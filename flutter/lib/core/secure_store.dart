@@ -10,6 +10,7 @@
 
 import 'dart:convert';
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
 import 'space.dart';
@@ -55,11 +56,23 @@ class AndroidSecureStore implements SecureStore {
   @override
   Future<List<Space>> readAll() async {
     final raw = await _storage.read(key: _kAll);
-    if (raw == null) return const [];
-    final list = jsonDecode(raw) as List<dynamic>;
-    return list
-        .map((e) => Space.fromJson(e as Map<String, dynamic>))
-        .toList();
+    if (raw == null) return <Space>[];
+    try {
+      final list = jsonDecode(raw) as List<dynamic>;
+      return list
+          .map((e) => Space.fromJson(e as Map<String, dynamic>))
+          .toList();
+    } catch (e, st) {
+      // 数据损坏（JSON 格式错 / 字段缺失 / 类型不对）→ 清空后自愈，
+      // 避免一次脏数据锁死后续 upsertAndActivate。
+      debugPrint('[SecureStore] readAll 解码失败，已清空: $e\n$st');
+      try {
+        await _storage.delete(key: _kAll);
+      } catch (_) {
+        // 清不掉也无所谓，下次覆盖写入自然会顶掉。
+      }
+      return <Space>[];
+    }
   }
 
   @override
