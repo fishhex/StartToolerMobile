@@ -1,10 +1,15 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
-    <!-- Hello demo:仅保留 Flutter 工具链建议的 INTERNET 权限。 -->
+    <!-- v0.14: INTERNET（直连 PC HTTP） + Photo Picker（Android 13+ 无需额外权限） + CAMERA（mobile_scanner QR 扫码） -->
     <uses-permission android:name="android.permission.INTERNET"/>
+    <uses-permission android:name="android.permission.CAMERA"/>
+    <!-- ML Kit Barcode（mobile_scanner 内部使用）所需的网络与可选的硬件特性 -->
+    <uses-feature android:name="android.hardware.camera" android:required="false"/>
+    <uses-feature android:name="android.hardware.camera.autofocus" android:required="false"/>
 
     <application
         android:label="starttooler_mobile"
-        android:name="${applicationName}">
+        android:name="${applicationName}"
+        android:usesCleartextTraffic="true">
         <activity
             android:name=".MainActivity"
             android:exported="true"

@@ -10,6 +10,14 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
+  go_router: ^14.2.0
+  provider: ^6.1.2
+  http: ^1.2.1
+  flutter_secure_storage: ^9.2.2
+  image_picker: ^1.1.2
+  http_parser: ^4.0.2
+  mobile_scanner: ^5.2.3
+  permission_handler: ^11.3.1
 
 dev_dependencies:
   flutter_test:
